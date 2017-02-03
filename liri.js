@@ -27,12 +27,12 @@ function spotifySearch(err,data) {
   var trackInfo = data.tracks.items[0];
   var artistName = trackInfo.artists[0].name;
   var songName = trackInfo.name;
-  var songUrl = trackInfo.external_urls.spotify;
+  var songPreview = trackInfo.preview_url;
   var songAlbum = trackInfo.album.name;
 
   console.log('Artist Name: ' + artistName);
   console.log('Song Name: ' + songName);
-  console.log('Link: ' + songUrl);
+  console.log('Link: ' + songPreview);
   console.log('Album: ' + songAlbum);
 }
 
@@ -43,14 +43,9 @@ function titleConvert() {
       titleArr.push(process.argv[i])
     };
     title = titleArr.join('+');
-    console.log(title);
-
-  } else if(argument.indexOf(" ") >= 0) {
-    title = argument.split(" ").join("+");
   } else {
     title = argument;
   }
-  omdbUrl = 'http://www.omdbapi.com/?t='+ title + '&y=&plot=short&r=json'
 }
 
 function omdbSearch(err,response,data) {
@@ -91,14 +86,19 @@ function leer(command,argument) {
   //SPOTIFY CASE
   } else if (command === "spotify-this-song") {
     if(argument) {
-      spotify.search({ type: 'track', query: argument}, spotifySearch);
+      song = argument;
     } else {
-      spotify.search({ type: 'track', query: 'The Sign Ace of Base'}, spotifySearch);
+      song = 'The Sign Ace of Base'
     }
-
+    spotify.search({ type: 'track', query: song}, spotifySearch);
   // OMDB CASE
   } else if (command === "movie-this") {
-    titleConvert()
+    if(argument)
+      titleConvert()
+    else {
+      title = 'Mr. Nobody'
+    }
+    omdbUrl = 'http://www.omdbapi.com/?t='+ title + '&y=&plot=short&r=json'
     request(omdbUrl, omdbSearch)
 
   //TXT FILE CASE
