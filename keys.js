@@ -1,5 +1,3 @@
-console.log('this is loaded');
-
 module.exports = {
   consumer_key: 'dYnlT0TIcT3FXh0C2iM3wIaxm',
   consumer_secret: 'N2C6q80Za356dBQMrCes3Ca63YIOfqGNVIta09Gv8WoyEPCfgZ',
