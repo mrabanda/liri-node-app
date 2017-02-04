@@ -9,20 +9,22 @@ var twit = new twitter(keys);
 var command = process.argv[2];
 var argument = process.argv[3];
 
-function twitterSearch(err,data) {
+//Callback prints user tweets
+function twitterSearch(err,tweets) {
   if (err) {
-      console.log('Error occurred: ' + err);
-      return;
+    console.log('Error occurred: ' + err);
+    return;
   };
-  for (let i = 0; i < data.length; i++) {
-    console.log(data[i].text);
+  for (let i = 0; i < tweets.length; i++) {
+    console.log(tweets[i].text);
   }
 }
 
+//Callback prints spotify song search results
 function spotifySearch(err,data) {
   if (err) {
-      console.log('Error occurred: ' + err);
-      return;
+    console.log('Error occurred: ' + err);
+    return;
   };
   var trackInfo = data.tracks.items[0];
   var artistName = trackInfo.artists[0].name;
@@ -36,24 +38,21 @@ function spotifySearch(err,data) {
   console.log('Album: ' + songAlbum);
 }
 
-function titleConvert() {
-  if(process.argv[4]) {
-    let titleArr = [];
-    for (let i = 3; i < process.argv.length; i++) {
-      titleArr.push(process.argv[i])
-    };
-    title = titleArr.join('+');
+function checkSong() {
+	if(argument) {
+    song = argument;
   } else {
-    title = argument;
+    song = 'The Sign Ace of Base'
   }
 }
 
+//Callback prints movie search results
 function omdbSearch(err,response,data) {
   if (err) {
-      console.log('Error occurred: ' + err);
-      return;
+    console.log('Error occurred: ' + err);
+    return;
   };
-  movieData = JSON.parse(data);
+  movieData = JSON.parse(data); //data recieved as text, must convert to JSON before using
   movieTitle = movieData.Title;
   movieYear = movieData.Year;
   movieRating = movieData.imdbRating;
@@ -71,37 +70,45 @@ function omdbSearch(err,response,data) {
   console.log('Actors: ' + movieActors)
 }
 
+function checkTitle() {
+	if(argument) {
+    title = argument;
+  } else {
+    title = 'Mr. Nobody'
+  }
+  omdbUrl = 'http://www.omdbapi.com/?t='+ title + '&y=&plot=short&r=json'
+}
+
+//Callback that puts data read from file into 2 variables and passes them to leer()
 function searchFromFile(err,data) {
-  var dataArr = data.split(',');
+  var dataArr = data.replace(/['"]+/g,'').trim().split(',');
   command = dataArr[0];
   argument = dataArr[1];
   leer(command,argument);
 }
 
+/* Main function that interprets user commands from terminal:
+"my-tweets ['screen name']"
+"spotify-this-song ['song title']"
+"movie-this ['movie title']"
+"do-what-it-says" */
 function leer(command,argument) {
-  //TWITTER CASE
+
+  //my-tweets
   if (command === 'my-tweets') {
     twit.get('statuses/user_timeline', {screen_name: argument, count: 20}, twitterSearch)
 
-  //SPOTIFY CASE
+  //spotify-this-song
   } else if (command === "spotify-this-song") {
-    if(argument) {
-      song = argument;
-    } else {
-      song = 'The Sign Ace of Base'
-    }
+  	checkSong();
     spotify.search({ type: 'track', query: song}, spotifySearch);
-  // OMDB CASE
+
+  //movie-this
   } else if (command === "movie-this") {
-    if(argument)
-      titleConvert()
-    else {
-      title = 'Mr. Nobody'
-    }
-    omdbUrl = 'http://www.omdbapi.com/?t='+ title + '&y=&plot=short&r=json'
+    checkTitle();
     request(omdbUrl, omdbSearch)
 
-  //TXT FILE CASE
+  //do-what-it-says (run the search from command written in file)
   } else if (command === "do-what-it-says") {
     fs.readFile('random.txt', 'utf8', searchFromFile)
   }
